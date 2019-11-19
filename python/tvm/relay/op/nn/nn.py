@@ -18,6 +18,7 @@
 """Neural network operations."""
 from __future__ import absolute_import as _abs
 from ...expr import TupleWrapper
+from ...expr import Tuple
 from . import _make
 
 
@@ -1830,3 +1831,50 @@ def cross_entropy_with_logits(predictions, targets):
       The computed result.
     """
     return _make.cross_entropy_with_logits(predictions, targets)
+
+
+def accel (data,
+           output_shape,
+           layout,      
+           input_name,  
+           output_name, 
+           kernel_name):
+
+    """ Accelerator operator.
+    Provides hook to insert generic TVM accelerator calls
+
+    Parameters
+    ----------
+    data : tvm.relay.Expr
+        The input data to the operator.
+
+    output_shape : tvm.relay.Expr
+        The expected output shape.
+
+    layout : str
+        Required formatting (i.e. NCHW, NHWC).
+
+    input_name : str 
+        Tensor input name.
+
+    output_name : str 
+        Tensor output name.
+
+    kernel_name : str
+        Identifier of the subgraph to be executed.
+
+    Returns
+    -------
+    result : tvm.relay.Expr
+        The computed result.
+    """
+
+    data = list(data)
+    return _make.accel(Tuple(data),
+                       output_shape,
+                       layout,      
+                       input_name,  
+                       output_name, 
+                       kernel_name
+                       )
+

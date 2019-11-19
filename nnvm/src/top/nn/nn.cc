@@ -797,5 +797,36 @@ NNVM_REGISTER_OP(l2_normalize)
 .set_attr<FCorrectLayout>("FCorrectLayout", ElemwiseArbitraryLayout<1, 1>)
 .set_support_level(1);
 
+
+DMLC_REGISTER_PARAMETER(ACCELParam);
+
+inline bool ACCELInferShape(const nnvm::NodeAttrs& attrs,
+			   std::vector<TShape>* in_shape,
+			   std::vector<TShape>* out_shape) {
+  TShape dshape = (*in_shape)[0];
+  //TShape oshape = dshape;
+  const ACCELParam& param = nnvm::get<ACCELParam>(attrs.parsed);
+
+  
+  TShape oshape ({param.output_shape[0],
+	param.output_shape[1],
+	param.output_shape[2],
+	param.output_shape[3]});
+
+  //std::cout << param.output_shape;
+
+  NNVM_ASSIGN_OUTPUT_SHAPE(attrs, *out_shape, 0, oshape);
+  return true;
+}
+  
+NNVM_REGISTER_OP(accel)
+.describe("acceleration OP that runs fused operation using the acceleration runtime")
+.add_argument("data","4D Tensor", "Input data")
+.set_attr_parser(ParamParser<ACCELParam>)
+.set_attr<FInferShape>("FInferShape", ACCELInferShape)
+.set_num_inputs(kVarg)
+.set_num_outputs(1);
+
+
 }  // namespace top
 }  // namespace nnvm

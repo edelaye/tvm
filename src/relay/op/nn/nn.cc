@@ -961,5 +961,77 @@ Accept logits.
 .add_type_rel("CrossEntropy", CrossEntropyRel);
 
 
+// Generic Accelerator 
+TVM_REGISTER_NODE_TYPE(ACCELAttrs);
+  
+// relay.nn.accel
+bool ACCELRel(const Array<Type>& types,
+                    int num_inputs,
+                    const Attrs& attrs,
+                    const TypeReporter& reporter) {
+
+  const auto* data = types[0].as<TupleTypeNode>();
+  const auto& first = Downcast<TensorType>(data->fields[0]);
+
+  if (data == nullptr) {
+    CHECK(types[0].as<IncompleteTypeNode>())
+      << "cast: expect input type to be TupleType but get "
+      << types[0];
+    return false;
+  }
+  
+  const auto* param = attrs.as<ACCELAttrs>();
+  CHECK(param != nullptr);
+
+  
+  Array<tvm::Expr> oshape  = {param->output_shape[0],
+			      param->output_shape[1],
+			      param->output_shape[2],
+			      param->output_shape[3]};
+  
+  
+  // assign output type
+  reporter->Assign(types[1], TensorTypeNode::make(oshape, first->dtype));
+
+  return true;
+}
+
+
+Expr MakeACCEL(Expr data,
+		 Array<IndexExpr> output_shape,
+		 std::string      layout,
+		 std::string      input_name,
+		 std::string      output_name,
+		 std::string      kernel_name
+		 ) {
+  auto attrs = make_node<ACCELAttrs>();
+    
+  attrs->output_shape = std::move(output_shape);
+  attrs->layout	= std::move(layout      );
+  attrs->input_name	= std::move(input_name	);
+  attrs->output_name	= std::move(output_name );
+  attrs->kernel_name	= std::move(kernel_name );
+    
+  static const Op& op = Op::Get("nn.accel");
+
+
+  return CallNode::make(op, {data}, Attrs(attrs), {});
+
+}
+
+
+TVM_REGISTER_API("relay.op.nn._make.accel")
+.set_body_typed(MakeACCEL);
+
+RELAY_REGISTER_OP("nn.accel")
+.describe(R"code(acceleration OP that runs fused operation using the accelration runtime)code" TVM_ADD_FILELINE)
+.set_attrs_type_key("relay.attrs.ACCELAttrs")
+.set_num_inputs(1)
+.add_argument("data","Tensor", "List of Input Tensors")
+.set_support_level(15)
+.add_type_rel("ACCEL",ACCELRel)
+.set_attr<TOpPattern>("TOpPattern",kInjective);
+
+
 }  // namespace relay
 }  // namespace tvm
