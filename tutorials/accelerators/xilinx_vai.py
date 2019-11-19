@@ -95,16 +95,21 @@ def inputs_func(iter):
     import os
     from xfgraph.io import ImgLoader, ImgProcessor
     
-    img_loader = ImgLoader()
-    data_preprocessor = ImgProcessor(
-        #proc_key = "resize-224,224__scale-0.00392156862__normalize-0.485,0.456,0.406-0.229,0.224,0.225"
+    model_name = 'Tensorflow-SLIM-ResNet_V1_50'
+    #model_name = 'MXNET-GLUON-ResNet_V1_18'
+    
+    if model_name == 'MXNET-GLUON-ResNet_V1_18':
+        proc_key = "resize-224,224__scale-0.00392156862__normalize-0.485,0.456,0.406-0.229,0.224,0.225"
+    elif model_name == 'Tensorflow-SLIM-ResNet_V1_50':
         proc_key = "resize_smallest_side-256__central_crop-224-224-3__subtract-123.68,116.78,103.94"
-    )
+
+    img_loader = ImgLoader()
+    data_preprocessor = ImgProcessor(proc_key = proc_key)
     
     FILE_PATH = '/tmp/vai'
     file_dir = os.path.join(FILE_PATH, "imagenet/val-small")
 
-    img_files = [os.path.join(file_dir, f) for f in os.listdir(file_dir)][:8]
+    img_files = [os.path.join(file_dir, f) for f in os.listdir(file_dir)][:32]
 
     # img loader and processor load in NHWC format
     imgs = img_loader.load(img_files)

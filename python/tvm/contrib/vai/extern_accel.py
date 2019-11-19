@@ -42,7 +42,13 @@ def accel_fused(kernel_name, input_name, output_name,
     task = n2cube.dpuCreateTask(kernel, 0)
 
     # Load image to DPU
-    X = ins[0].asnumpy().reshape((-1))
+    X = ins[0].asnumpy()
+    
+    # Possibly transpose input if layout is NCHW
+    if layout == 'NCHW':
+        X = np.transpose(X, (0,2,3,1)) # NCHW --> NHWC
+
+    X = X.reshape((-1))
     n2cube.dpuSetInputTensorInHWCFP32(task, input_name, X, len(X))
 
     # Model run on DPU """
@@ -63,10 +69,10 @@ def accel_fused(kernel_name, input_name, output_name,
     value_shape = tuple(out.shape) if layout == 'NHWC' else  \
         (out.shape[0], out.shape[2], out.shape[3], out.shape[1])
     value = np.reshape(value, value_shape)
-
-    # DPU output is in NHWC
-    if layout == 'NCHW':
-        value = np.transpose(value,(0,3,1,2))
     
+    # DPU output is in NHWC but graph is executed in NCHW
+    if output_layout == 'NCHW':
+        value = np.transpose(value, (0,3,1,2))
+
     tvm.nd.array(value).copyto(out)
 

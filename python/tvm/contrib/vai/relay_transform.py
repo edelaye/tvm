@@ -82,7 +82,7 @@ class PartitioningPass:
         
     def transform_module(self, mod, ctx):
         """
-        Transformation module method which is called by parent __call__
+        Transformation module method which is called from parent __call__
         """
         
         target = self.target.split("-")[0]
@@ -146,7 +146,7 @@ class PartitioningPass:
         path: str
             the path to the compilation and quantization files
         layout: str
-            the layout of the graph
+            the layout of the graph (NCHW or NHWC)
         target: str
             the acceleration target
         output_layers: List[str]
@@ -179,7 +179,7 @@ class PartitioningPass:
             input_names  = dnnc_comp_d[input_names[0] ]
             output_names = dnnc_comp_d[output_names[0]]
 
-        else:
+        elif target == 'xdnn':
             compiler_json_file = path  + "/_compiler.json"
             with open(compiler_json_file) as json_file:
                 json_graph = json.load(json_file)
@@ -189,10 +189,11 @@ class PartitioningPass:
             
             compiler_shape_output = json_graph["network"][-1]["outputshapes"]
 
-
             kernel_name  = ""
             input_names  = ""
             output_names = ""
+        else:
+            raise ValueError("Unsupported target: {}".format(target))
             
         xfuse_inputs=[]
         fuse_list=[]
@@ -212,7 +213,9 @@ class PartitioningPass:
             else:
                 output_hash = self.extract_hash(output,'previous_layers')
 
-            expr = self.traverse(expr, path, output_hash, input_list, layout, compiler_shape_output, kernel_name, output_names,input_names, target)
+            expr = self.traverse(expr, path, output_hash, input_list, layout, 
+                                 compiler_shape_output, kernel_name, 
+                                 output_names, input_names, target)
 
         
         # Possibly add output_layers at the end (softmax)
@@ -288,11 +291,10 @@ class PartitioningPass:
             
         else:
             raise ValueError("Missing condition to handle node type %s", type(expr))
-
-
         
 
-    def traverse(self,expr, path, output_hash, input_list, layout, output_shape, kernel_name,output_names,input_names, target ): 
+    def traverse(self,expr, path, output_hash, input_list, layout, 
+                 output_shape, kernel_name,output_names,input_names, target): 
         """
         Traverse through Relay expression to find input and output expressions
         and recreate expression with fused acceleration operation
@@ -393,6 +395,7 @@ class PartitioningPass:
                 new_node = relay.Call(expr.op,children,expr.attrs,expr.type_args)
 
             else:
-                raise NotImplementedError("Condition to reconstruct node type %s has not been implemented", type(expr))
+                raise NotImplementedError("Condition to reconstruct node type %s"\
+                    " has not been implemented", type(expr))
 
         return new_node

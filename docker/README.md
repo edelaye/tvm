@@ -38,6 +38,8 @@ The script does the following things:
 
 The helper bash script can be useful to build demo sessions.
 
+NOTE: For building ci_vai image for Xilinx Vitis-AI CNN acceleration you will have to retrieve dnndk v3.1 from https://www.xilinx.com/products/design-tools/ai-inference/ai-developer-hub.html#edge, extract the tar and place the host_x86 folder inside this tvm/docker directory.
+
 ## Prebuilt Docker Images
 
 We provide several pre-built images for doing quick exploration with TVM installed.
