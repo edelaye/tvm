@@ -24,7 +24,7 @@ import tvm
 
 try:
     from dnndk import n2cube
-except Exception:
+except ImportError:
     warnings.warn("Could not import dnndk n2cube")
 
 
@@ -70,7 +70,7 @@ def accel_fused(kernel_name, input_name, output_name,
     # Possibly transpose input if layout is NCHW
     if layout == 'NCHW':
         # NCHW --> NHWC
-        X = np.transpose(X, (0, 2, 3, 1)) 
+        X = np.transpose(X, (0, 2, 3, 1))
 
     X = X.reshape((-1))
     n2cube.dpuSetInputTensorInHWCFP32(task, input_name, X, len(X))

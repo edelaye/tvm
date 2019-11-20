@@ -63,7 +63,8 @@ class NNVMPartitioningPass(object):
                 'dpu-zcu104', 'dpu-zcu104-skipcompile']: # TODO: remove dpu_nocompile
             raise ValueError("Invalid target: {} for the Vitis-AI"\
                              " partitioning pass, only 'dpu-ultra96' and"\
-                             " 'dpu-zcu104' targets are supported at the") #\ " moment.".format(target))
+                             " 'dpu-zcu104' targets are supported at the"\
+                             " moment.".format(target))
 
         if layout not in ['NCHW', 'NHWC']:
             raise ValueError("Invalid layout: {} for Vitis-AI partitioning"\
@@ -186,7 +187,7 @@ class NNVMPartitioningPass(object):
             for node in json_graph['nodes']:
                 if node['LayerParameter']['type'][0] == 'DPU':
                     attrs = node['LayerParameter']['attrs']
-   
+
                     kernel_name = node['name']
                     input_names = attrs['input_names']
                     output_names = attrs['output_names']
@@ -205,7 +206,7 @@ class NNVMPartitioningPass(object):
                 json_graph = json.load(json_file)
 
             graph_inputs = json_graph["inputs"]
-            graph_outputs = json_graph["outputs"]                                     
+            graph_outputs = json_graph["outputs"]                                 
             compiler_shape_output = json_graph["network"][-1]["outputshapes"]
 
             kernel_name = ""
@@ -269,11 +270,11 @@ class NNVMPartitioningPass(object):
                                             compiler_shape_output[3],
                                             compiler_shape_output[1],
                                             compiler_shape_output[2])
-                        else: 
+                        else:
                             output_shape = (1,
                                             compiler_shape_output[1],
                                             compiler_shape_output[2],
-                                            compiler_shape_output[3])   
+                                            compiler_shape_output[3])
 
                         new_entry = sym.accel(*accel_inputs,
                                               kernel_name=kernel_name,
@@ -284,7 +285,7 @@ class NNVMPartitioningPass(object):
 
                         node_map[nid] = new_entry
             else:
-  
+
                 if op_name == "null":
                     new_entry = nnvm.symbol.Variable(node_name)
                     accel_inputs.append(new_entry)
@@ -300,13 +301,13 @@ class NNVMPartitioningPass(object):
                 if layer == 'Softmax':
                     nodes = list(node_map.keys())
                     node_map[nodes[-1]+1] = sym.softmax(node_map[nodes[-1]])
-    
+
         node_map_list = list(node_map.items())
 
         # Assume the last node is always the output
         return nnvm.graph.create(node_map_list[-1][1])
 
-    def fuse(self, graph, xfuse_inputs, input_list, queue, fuse_list, 
+    def fuse(self, graph, xfuse_inputs, input_list, queue, fuse_list,
              count, target):
         """
         Recursive function for parsing graph and finding nodes between
@@ -338,5 +339,5 @@ class NNVMPartitioningPass(object):
             else:
                 queue.append(nid)
 
-        self.fuse(graph, xfuse_inputs, input_list, queue, fuse_list, 
+        self.fuse(graph, xfuse_inputs, input_list, queue, fuse_list,
                   count, target)

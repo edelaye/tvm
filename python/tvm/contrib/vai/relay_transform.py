@@ -391,8 +391,7 @@ class PartitioningPass:
                 for node in expr.args:
 
                     if isinstance(node, tvm.relay.expr.Call):
-                        if node.op == output_node.op or 
-                                output_node.op.name == 'nn.accel':
+                        if node.op == output_node.op or output_node.op.name == 'nn.accel':
                             children.append(output_node)
                         else:
                             children.append(node)

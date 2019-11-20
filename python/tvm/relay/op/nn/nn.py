@@ -1873,6 +1873,6 @@ def accel(data,
     return _make.accel(Tuple(data),
                        output_shape,
                        layout,
-                       input_name,  
+                       input_name,
                        output_name,
                        kernel_name)

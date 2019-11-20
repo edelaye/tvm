@@ -31,7 +31,7 @@ def schedule_accel(attrs, outputs, target):
     return tvm.create_schedule([x.op for x in outputs])
 
 
- 
+
 @reg.register_compute("accel", level=15)
 def compute_accel(attrs, inputs, outputs):
     op = 'accel'
@@ -59,9 +59,9 @@ def compute_accel(attrs, inputs, outputs, target):
 
     out = tvm.extern(outputs.shape, inputs,
                      lambda ins, outs: tvm.call_packed(
-                         'tvm.accel.accel_fused', attrs.kernel_name, 
+                         'tvm.accel.accel_fused', attrs.kernel_name,
                          attrs.input_name, attrs.output_name, attrs.layout,
-                         outs[0], *ins), 
+                         outs[0], *ins),
                      name=name)
 
     return [out]
