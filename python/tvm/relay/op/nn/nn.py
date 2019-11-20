@@ -1833,12 +1833,12 @@ def cross_entropy_with_logits(predictions, targets):
     return _make.cross_entropy_with_logits(predictions, targets)
 
 
-def accel (data,
-           output_shape,
-           layout,      
-           input_name,  
-           output_name, 
-           kernel_name):
+def accel(data,
+          output_shape,
+          layout,
+          input_name,
+          output_name,
+          kernel_name):
 
     """ Accelerator operator.
     Provides hook to insert generic TVM accelerator calls
@@ -1854,10 +1854,10 @@ def accel (data,
     layout : str
         Required formatting (i.e. NCHW, NHWC).
 
-    input_name : str 
+    input_name : str
         Tensor input name.
 
-    output_name : str 
+    output_name : str
         Tensor output name.
 
     kernel_name : str
@@ -1872,9 +1872,7 @@ def accel (data,
     data = list(data)
     return _make.accel(Tuple(data),
                        output_shape,
-                       layout,      
+                       layout,
                        input_name,  
-                       output_name, 
-                       kernel_name
-                       )
-
+                       output_name,
+                       kernel_name)

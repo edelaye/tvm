@@ -15,11 +15,10 @@
 # specific language governing permissions and limitations
 # under the License.
 
-""" 
+"""
 Registration of Vitis-AI NNVM and relay 'accel' operations
 
 """
-
 
 import tvm
 from nnvm.top import registry as reg
@@ -32,22 +31,22 @@ def schedule_accel(attrs, outputs, target):
     return tvm.create_schedule([x.op for x in outputs])
 
 
-    
+ 
 @reg.register_compute("accel", level=15)
 def compute_accel(attrs, inputs, outputs):
     op = 'accel'
     name = 'accel0'
-    
-    out = tvm.extern(outputs[0].shape, inputs, 
-        lambda ins, outs: tvm.call_packed(
-            'tvm.accel.accel_fused', attrs['kernel_name'],
-            attrs['input_name'], attrs['output_name'],
-            attrs['layout'], outs[0], *ins ), 
-        name=name)
-    
+
+    out = tvm.extern(outputs[0].shape, inputs,
+                     lambda ins, outs: tvm.call_packed(
+                         'tvm.accel.accel_fused', attrs['kernel_name'],
+                         attrs['input_name'], attrs['output_name'],
+                         attrs['layout'], outs[0], *ins),
+                     name=name)
+
     return out
 
-   
+
 @op.register_schedule("nn.accel", level=15)
 def schedule_accel(attrs, outputs, target):
     return tvm.create_schedule([x.op for x in outputs])
@@ -55,14 +54,14 @@ def schedule_accel(attrs, outputs, target):
 
 @op.register_compute("nn.accel", level=15)
 def compute_accel(attrs, inputs, outputs, target):
-
     op = 'accel'
     name = 'accel0'
 
-    out = tvm.extern(outputs.shape, inputs, 
-        lambda ins, outs: tvm.call_packed(
-            'tvm.accel.accel_fused', attrs.kernel_name, attrs.input_name, 
-            attrs.output_name, attrs.layout, 
-            outs[0], *ins), name=name)
-    
+    out = tvm.extern(outputs.shape, inputs,
+                     lambda ins, outs: tvm.call_packed(
+                         'tvm.accel.accel_fused', attrs.kernel_name, 
+                         attrs.input_name, attrs.output_name, attrs.layout,
+                         outs[0], *ins), 
+                     name=name)
+
     return [out]
