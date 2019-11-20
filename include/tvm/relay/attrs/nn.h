@@ -653,21 +653,21 @@ struct ACCELAttrs : public tvm::AttrsNode<ACCELAttrs> {
   std::string input_name;
   std::string output_name;
   std::string kernel_name;
-   
+
   TVM_DECLARE_ATTRS(ACCELAttrs, "relay.attrs.ACCELAttrs") {
     TVM_ATTR_FIELD(output_shape)
-      .describe("Shape of the output node");
+        .describe("Shape of the output node");
     TVM_ATTR_FIELD(layout)
-      .describe("Layout of the output node");
+        .describe("Layout of the output node");
     TVM_ATTR_FIELD(kernel_name)
-      .describe("Kernel name");
+        .describe("Kernel name");
     TVM_ATTR_FIELD(input_name)
-      .describe("Input name");
+        .describe("Input name");
     TVM_ATTR_FIELD(output_name)
-      .describe("Output_name");
-   }
- };
- 
+        .describe("Output_name");
+  }
+};
+
 
 }  // namespace relay
 }  // namespace tvm
