@@ -22,10 +22,6 @@ import json
 import nnvm
 import nnvm.symbol as sym
 
-import xfgraph
-# Register dpu as a xfgraph target device
-from xfgraph.contrib import dnndk
-
 from xfgraph.frontend import from_nnvm
 from xfgraph.graph.io.xgraph_io import XGraphIO
 from xfgraph.generator.tensorflow import XfGraphTfGeneratorOptimizer
@@ -206,7 +202,7 @@ class NNVMPartitioningPass(object):
                 json_graph = json.load(json_file)
 
             graph_inputs = json_graph["inputs"]
-            graph_outputs = json_graph["outputs"]                                 
+            graph_outputs = json_graph["outputs"]                          
             compiler_shape_output = json_graph["network"][-1]["outputshapes"]
 
             kernel_name = ""
@@ -243,7 +239,6 @@ class NNVMPartitioningPass(object):
 
         # Reconstruct graph
         for nid, node in enumerate(nnvm_graph):
-            inputs = node["inputs"]
             attrs = node.get("attrs", {})
             node_name = node["name"]
             op_name = node["op"]

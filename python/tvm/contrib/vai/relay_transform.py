@@ -25,10 +25,6 @@ import json
 import tvm
 from tvm import relay
 
-import xfgraph
-# Register dpu as a xfgraph target device
-from xfgraph.contrib import dnndk
-
 from xfgraph.frontend import from_relay
 from xfgraph.graph.io.xgraph_io import XGraphIO
 from xfgraph.generator.tensorflow import XfGraphTfGeneratorOptimizer
@@ -80,7 +76,7 @@ class PartitioningPass:
         self.work_dir = '/tmp/vai'
         os.makedirs(self.work_dir, exist_ok=True)
 
-    def transform_module(self, mod, ctx):
+    def transform_module(self, mod, _):
         """
         Transformation module method which is called from parent __call__
         """
@@ -90,17 +86,17 @@ class PartitioningPass:
 
 
         if target == 'dpu':
-   
+
             xfgraph = from_relay(mod, self.params, data_layout=self.layout)
 
             # Optimize xfgraph for Tensorflow generation
             xfgraph.optimize(XfGraphTfGeneratorOptimizer)
-  
+
             # Internal partitioning
             xfgraph.partition(devices=[target])
 
             dpu_xgraph = xfgraph.schedule(device=target)
-            XGraphIO.save(dpu_xgraph, 
+            XGraphIO.save(dpu_xgraph,
                           os.path.join(self.work_dir, 'dpu_xgraph'))
 
             # Quantization
@@ -156,8 +152,7 @@ class PartitioningPass:
         -------
         mod: A partitioned Relay module
         """
-        node_map = {}
-        xdnn_inputs = []
+
         if target == 'dpu':
             compiler_json_file = path + "/dpu_xgraph.json"
             dnn_name = path + "/dnnc_comp_xp0.json"
@@ -175,7 +170,7 @@ class PartitioningPass:
                     graph_inputs = attrs['input_layers'][input_names[0]]
                     graph_outputs = [attrs['output_layers'][output_names[0]][-1]]
                     compiler_shape_output = node['LayerParameter']['shapes']
-          
+
             input_names = dnnc_comp_d[input_names[0]]
             output_names = dnnc_comp_d[output_names[0]]
 
@@ -194,10 +189,6 @@ class PartitioningPass:
             output_names = ""
         else:
             raise ValueError("Unsupported target: {}".format(target))
-
-        xfuse_inputs = []
-        fuse_list = []
-        queue = []
 
         if target == 'dpu':
             input_list = [self.extract_hash(n, 'dpu') for n in graph_inputs]
@@ -247,12 +238,11 @@ class PartitioningPass:
         except ValueError:
             if len(val) == 1:
                 return val[0]
-            else:
-                return int(val[1])
+            return int(val[1])
 
     def recurse(self, expr, input_list):
         """
-        Recursively find expression input nodes in provided input list 
+        Recursively find expression input nodes in provided input list
         """
         if isinstance(expr, tvm.relay.expr.Function):
             return self.recurse(expr.body, name)
@@ -277,8 +267,7 @@ class PartitioningPass:
 
             if (hash(expr) in input_list or input_name in input_list):
                 return expr
-            else:
-                return None
+            return None
         elif isinstance(expr, tvm.relay.expr.Tuple):
             if hash(expr) in input_list:
                 return expr
@@ -286,9 +275,8 @@ class PartitioningPass:
                 ret = self.recurse(node, input_list)
                 if ret is not None:
                     return ret
-                else:
-                    return None  
-    
+                return None
+
         else:
             raise ValueError("Missing condition to handle node type {}".format(type(expr)))
 
@@ -326,7 +314,7 @@ class PartitioningPass:
                                         output_shape[2],
                                         output_shape[3],
                                         output_shape[1])
-           
+
                     elif target == 'dpu'  and layout == 'NCHW':
                         output_shape = (1,
                                         output_shape[3],
@@ -348,7 +336,7 @@ class PartitioningPass:
                     return op
 
             return None
-    
+
 
         else:
             if isinstance(expr, tvm.relay.expr.Constant):
@@ -358,9 +346,9 @@ class PartitioningPass:
                 for node in expr.args:
 
                     output_node = self.traverse(node, path, output_hash,
-                                                input_list, layout, 
-                                                output_shape, kernel_name, 
-                                                output_names, input_names, 
+                                                input_list, layout,
+                                                output_shape, kernel_name,
+                                                output_names, input_names,
                                                 target)
                     if output_node is not None:
                         break
@@ -371,10 +359,10 @@ class PartitioningPass:
             elif isinstance(expr, tvm.relay.expr.TupleGetItem):
 
                 return self.traverse(expr.tuple_value, path, output_hash,
-                                     input_list, layout,output_shape,
+                                     input_list, layout, output_shape,
                                      kernel_name, output_names,
                                      input_names, target)
-        
+
             elif isinstance(expr, tvm.relay.expr.Tuple):
                 return None
 

@@ -20,21 +20,21 @@ Registration of Vitis-AI NNVM and relay 'accel' operations
 
 """
 
-import tvm
 from nnvm.top import registry as reg
+
+import tvm
 from tvm.relay import op as op
-from . import extern_accel
 
 
 @reg.register_schedule("accel", level=15)
-def schedule_accel(attrs, outputs, target):
+def schedule_accel(_, outputs, _):
     return tvm.create_schedule([x.op for x in outputs])
 
 
 
 @reg.register_compute("accel", level=15)
 def compute_accel(attrs, inputs, outputs):
-    op = 'accel'
+    """Compute definition of accel operation for NNVM"""
     name = 'accel0'
 
     out = tvm.extern(outputs[0].shape, inputs,
@@ -48,13 +48,13 @@ def compute_accel(attrs, inputs, outputs):
 
 
 @op.register_schedule("nn.accel", level=15)
-def schedule_accel(attrs, outputs, target):
+def schedule_nn_accel(_, outputs, _):
     return tvm.create_schedule([x.op for x in outputs])
 
 
 @op.register_compute("nn.accel", level=15)
-def compute_accel(attrs, inputs, outputs, target):
-    op = 'accel'
+def compute_nn_accel(attrs, inputs, outputs, _):
+    """Compute definition of accel operation for Relay"""
     name = 'accel0'
 
     out = tvm.extern(outputs.shape, inputs,
