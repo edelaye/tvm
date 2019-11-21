@@ -25,7 +25,7 @@ import json
 import tvm
 from tvm import relay
 
-from xfgraph.frontend import from_relay
+from xfgraph.frontend.tvm import from_relay
 from xfgraph.graph.io.xgraph_io import XGraphIO
 from xfgraph.generator.tensorflow import XfGraphTfGeneratorOptimizer
 from xfgraph.contrib.dnndk.decent_quantizer import DECENTQuantizer

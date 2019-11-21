@@ -35,7 +35,6 @@ logger = logging.getLogger('xfgraph')
 # logger.setLevel(logging.DEBUG)
 
 import xfgraph
-import models.tools as model_tools
 
 import tvm
 from tvm import contrib
@@ -43,11 +42,14 @@ import nnvm
 import tvm.relay as relay
 from tvm.contrib import vai
 
-##################################################
+###############################################################################
 # MODEL SETTINGS
-##################################################
+#
+# Utility models package should be added next to tvm package
+###############################################################################
 
-models = model_tools.get_models_dict()
+import xfgraph.model_tools as model_tools
+models = model_tools.get_models_dict('../../../models')
 
 def select_model(MODEL):
     global framework, model_name, model_path, opt_model_path, data_io,\
@@ -125,7 +127,7 @@ def inputs_func(iter):
 # Afterwards build graph, lib and params using standard TVM flow.
 ##############################################################################
 
-from xfgraph.io import load_model_from_file
+from xfgraph.frontend.tvm import load_model_from_file
 
 target        = tvm.target.arm_cpu('ultra96')
 input_name    = list(data_shapes.keys())[0]
