@@ -27,7 +27,8 @@ from tvm.relay import op as op
 
 
 @reg.register_schedule("accel", level=15)
-def schedule_accel(_, outputs, _):
+def schedule_accel(_, outputs, target):
+    del target
     return tvm.create_schedule([x.op for x in outputs])
 
 
@@ -48,7 +49,8 @@ def compute_accel(attrs, inputs, outputs):
 
 
 @op.register_schedule("nn.accel", level=15)
-def schedule_nn_accel(_, outputs, _):
+def schedule_nn_accel(_, outputs, target):
+    del target
     return tvm.create_schedule([x.op for x in outputs])
 
 
